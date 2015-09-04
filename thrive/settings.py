@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # openshift is our PAAS for now.
-ON_PAAS = 'HEROKU_PAAS' in os.environ
+ON_PAAS = 'ON_PAAS' in os.environ
 
 if ON_PAAS:
     SECRET_KEY = os.environ['SECRET_KEY']
@@ -67,7 +67,7 @@ ROOT_URLCONF = 'thrive.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
