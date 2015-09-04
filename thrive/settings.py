@@ -20,7 +20,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'uqcof&lv7+v0)%mp^%io^&smo9hkofe7n86kc$djj#q9zv58gn'
+# openshift is our PAAS for now.
+ON_PAAS = 'HEROKU_PAAS' in os.environ
+
+if ON_PAAS:
+    SECRET_KEY = os.environ['SECRET_KEY']
+else:
+    from keys import *
+    SECRET_KEY = os.environ['SECRET_KEY']
+
+DEBUG = not ON_PAAS
+DEBUG = DEBUG or 'DEBUG' in os.environ
+if ON_PAAS and DEBUG:
+    print("*** Warning - Debug mode is on ***")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,16 +86,25 @@ WSGI_APPLICATION = 'thrive.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'thrive',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
+if ON_PAAS:
+    # determine if we are on MySQL or POSTGRESQL
+    import dj_database_url
+    DATABASES = {}
+    DATABASES['default'] = dj_database_url.config()
+    #DATABASES['default']['ENGINE'] = 'django_postgrespool'
+
+else:
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'thrive',
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '',
+        }
     }
-}
 
 
 # Internationalization
@@ -104,10 +125,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# Parse database configuration from $DATABASE_URL
-import dj_database_url
-DATABASES['default'] =  dj_database_url.config()
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
